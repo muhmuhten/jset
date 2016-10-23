@@ -6,20 +6,44 @@
 #include <sys/jail.h>
 #include <jail.h>
 
-int main(int argc, char **argv) {
-	int jid;
+void failed(char fail, int status, const char *name, const char *msg,
+		void (*warnf)(const char *fmt, ...),
+		void (*errf)(int, const char *fmt, ...)) {
+	if (fail) {
+		errf(status, "%s: %s", name, msg);
+	}
+	else {
+		warnf("%s: %s", name, msg);
+	}
+}
 
-	if (argc < 2)
+int main(int argc, char **argv) {
+	int ch, jid;
+	int status = 0;
+	char fail = 0;
+
+	if (argc < 1)
 		errx(2, "not enough arguments");
 
-	jid = jail_getid(argv[1]);
-	if (jid == -1)
-		errx(1, "%s", jail_errmsg);
+	while ((ch = getopt(argc, argv, "fF")) != -1) {
+		switch (ch) {
+		case 'f': fail = 1; break;
+		case 'F': fail = 0; break;
+		default: errx(2, "usage: %s [-f] jail...", *argv);
+		}
+	}
+	argc -= optind;
+	argv += optind;
 
-	if (jail_remove(jid) == -1)
-		err(1, "jail_remove");
+	while (*argv) {
+		jid = jail_getid(*argv);
+		if (jid == -1)
+			failed(fail, status |= 2, *argv, jail_errmsg, warnx, errx);
+		else if (jail_remove(jid) == -1)
+			failed(fail, status |= 1, *argv, "jail_remove", warn, err);
 
-	if (!argv[2]) return 0;
-	execvp(argv[2], argv+2);
-	err(1, "%s", argv[2]);
+		argv++;
+	}
+
+	return status;
 }
