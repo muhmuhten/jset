@@ -1,3 +1,5 @@
+/* Copyright (c) 2016, Michael Zuo. ISC License. */
+
 #include <unistd.h>
 
 #include <err.h>
