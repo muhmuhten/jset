@@ -8,16 +8,8 @@
 #include <sys/jail.h>
 #include <jail.h>
 
-void failed(char fail, int status, const char *name, const char *msg,
-		void (*warnf)(const char *fmt, ...),
-		void (*errf)(int, const char *fmt, ...)) {
-	if (fail) {
-		errf(status, "%s: %s", name, msg);
-	}
-	else {
-		warnf("%s: %s", name, msg);
-	}
-}
+#define ERRMSG_GETID	"%s: %s", *argv, jail_errmsg
+#define ERRMSG_REMOVE	"%s: jail_remove", *argv
 
 int main(int argc, char **argv) {
 	int ch, jid;
@@ -39,10 +31,22 @@ int main(int argc, char **argv) {
 
 	while (*argv) {
 		jid = jail_getid(*argv);
-		if (jid == -1)
-			failed(fail, status |= 2, *argv, jail_errmsg, warnx, errx);
-		else if (jail_remove(jid) == -1)
-			failed(fail, status |= 1, *argv, "jail_remove", warn, err);
+		if (jid == -1) {
+			if (fail)
+				errx(2, ERRMSG_GETID);
+			else {
+				status |= 2;
+				warnx(ERRMSG_GETID);
+			}
+		}
+		else if (jail_remove(jid) == -1) {
+			if (fail)
+				err(1, ERRMSG_REMOVE);
+			else {
+				status |= 1;
+				warn(ERRMSG_REMOVE);
+			}
+		}
 
 		argv++;
 	}
