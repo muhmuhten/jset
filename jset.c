@@ -16,17 +16,13 @@ int main(int argc, char **argv) {
 	if (argc < 1)
 		errx(2, "not enough arguments");
 
-	while ((ch = getopt(argc, argv, "cCuUaAdD")) != -1) {
+	while ((ch = getopt(argc, argv, "cuad")) != -1) {
 		switch (ch) {
 		case 'c': flags |= JAIL_CREATE;  break;
 		case 'u': flags |= JAIL_UPDATE;  break;
 		case 'a': flags |= JAIL_ATTACH;  break;
 		case 'd': flags |= JAIL_DYING;   break;
-		case 'C': flags &= ~JAIL_CREATE; break;
-		case 'U': flags &= ~JAIL_UPDATE; break;
-		case 'A': flags &= ~JAIL_ATTACH; break;
-		case 'D': flags &= ~JAIL_DYING;  break;
-		default: errx(2, "usage: %s [-CUad] params... '' prog...", *argv);
+		default: errx(2, "usage: %s [-cuad] params... '' prog...", *argv);
 		}
 	}
 	argc -= optind;
