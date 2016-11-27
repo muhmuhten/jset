@@ -6,7 +6,7 @@ Usage
 
 ::
 
-	jset [-CuAd] params... ["" prog...]
+	jset [-cuad] params... ["" prog...]
 	jat jail prog...
 	jrm [-f] jail...
 
@@ -21,16 +21,17 @@ interfaces to parse arguments from the command line.
 
 ``params...`` should consist of an even number of arguments alternating between
 names and values, which are parsed by jailparam_init(3) and jailparam_import(3)
-respectively, then passed together to jailparam_set(3) with flags dependent on
-the following options:
+respectively, then passed together to jailparam_set(3) with flags set according
+to the following options:
 
-* ``-c/-C``: add (default)/omit JAIL_CREATE.
-* ``-u/-U``: add/omit (default) JAIL_UPDATE.
-* ``-A/-A``: add (default)/omit JAIL_ATTACH.
-* ``-d/-D``: add/omit (default) JAIL_DYING.
+* ``-c``: add JAIL_CREATE.
+* ``-u``: add JAIL_UPDATE.
+* ``-a``: add JAIL_ATTACH.
+* ``-d``: add JAIL_DYING.
 
-The default is ``-cUaD``, so normally only ``-CuAd`` are useful options. See
-jail(8) for information on parameters and jail_set(2) for information on flags.
+By default, no flags are set. Typical use to create a new jail and immediately
+enter it requires ``-ca``. See jail(8) for more information on parameters and
+jail_set(2) for more information on these flags.
 
 If ``prog...`` is specified, ``jset`` then chain-loads it using execvp(3).
 
@@ -45,6 +46,9 @@ jat
 The ``jat`` utility is a wrapper for jail_attach(2) using jail_getid(3). It is
 generally redundant with jexec(8), except that it has much less functionality;
 it doesn't bother shoddily implementing a subset of su(1)'s functionality...
+
+Generally, ``jset -ua`` is also sufficient to accomplish anything which could
+be done with ``jat``, but can also modify the jail's parameters.
 
 jrm
 ~~~
@@ -78,20 +82,19 @@ includes a lot of functionality which isn't needed when we have a run script.
 It also isn't very scriptable, as its behaviour is determined in large part a
 configuration file intended for humans, not programs, to edit.
 
-``jset`` supersedes ``gaogao``, doing less ad-hoc parsing and requiring less
-work to support new types of jail parameters as long as libjail is supported.
+``jset`` supersedes ``gaogao``, reducing ad-hoc parsing by delegating that to
+libjail. As such, it should also require less work to support jail parameters
+with new types, as libjail will usually be updated alongside the host kernel.
 
 Caveats
 -------
 
-It works for me; it may or may not work for you. These programs are probably
-for all intents and purposes final products: they will not need updating for
-new features in the foreseeable future (parsing is handled by libjail), and
-there is so little code that they are unlikely to contain bugs short of
-fundamental design errors.
+It suffices for me; it may or may not work for you.
 
-As of the time of this writing, jexec(8) was last updated 15 months ago, and
-before that hadn't been touched in the past six years.
+These programs may be treated for all intents and purposes final products, as
+they are designed to avoid needing updates for new features in the foreseeable
+future (parsing is handled by libjail), and there is so little code that they
+are unlikely to contain bugs short of fundamental design errors.
 
 License
 -------

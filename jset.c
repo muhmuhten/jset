@@ -9,7 +9,7 @@
 #include <jail.h>
 
 int main(int argc, char **argv) {
-	int ch, flags = JAIL_CREATE|JAIL_ATTACH;
+	int ch, flags = 0;
 	unsigned njp = 0;
 	struct jailparam jp[argc/2]; /* maximum used if all args are params */
 
