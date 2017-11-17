@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	int jid;
 
 	if (argc < 2)
-		errx(2, "not enough arguments");
+		errx(2, "usage: %s jid|name prog...", *argv);
 
 	jid = jail_getid(argv[1]);
 	if (jid == -1)
