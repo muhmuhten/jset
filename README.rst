@@ -17,7 +17,9 @@ jset
 ~~~~
 
 The ``jset`` utility is a wrapper for jail_set(2), using libjail's jailparam_*
-interfaces to parse arguments from the command line.
+interfaces to parse arguments from the command line. ``jset`` *does not* call
+chdir(2), even a path parameter is present; it behaves more like the chroot(2)
+system call than the utility of the same name.
 
 ``params...`` should consist of an even number of arguments alternating between
 names and values, which are parsed by jailparam_init(3) and jailparam_import(3)
@@ -47,6 +49,8 @@ The ``jat`` utility is a wrapper for jail_attach(2) using jail_getid(3). It is
 generally redundant with jexec(8), except that it has much less functionality;
 it doesn't bother shoddily implementing a subset of su(1)'s functionality...
 
+``jat`` *does not* call chdir(2), which may create security vulnerabilities.
+
 Generally, ``jset -ua`` is also sufficient to accomplish anything which could
 be done with ``jat``, but can also modify the jail's parameters.
 
@@ -68,9 +72,8 @@ in order. Its behaviour on failure is determined by its options:
 jail_get(2)
 ~~~~~~~~~~~
 
-No wrapper for jail_get(2) is provided; just use jls(8). Unlike for the other
-three calls, there doesn't seem to be a single obvious interface for it. jls(8)
-may be complex, but the complexity is mostly not superfluous.
+No wrapper for jail_get(2) is provided; I have not been able to design a clean,
+obvious interface to it. Just use jls(8).
 
 why this
 --------
@@ -95,6 +98,15 @@ These programs may be treated for all intents and purposes final products, as
 they are designed to avoid needing updates for new features in the foreseeable
 future (parsing is handled by libjail), and there is so little code that they
 are unlikely to contain bugs short of fundamental design errors.
+
+It should be noted that jail_attach(2) and jail_set(2), like chroot(2), have no
+effect on the process's current directory. For best results, always enter jails
+from the inside. (It's not safe to invoke the jail's own binaries to chdir(2)
+after entering the jail if the contents are untrusted, since those binaries may
+be doctored to do evil outside the jail path.) This is not "fixable", as a jail
+need not have the path parameter, and it would be tedious to change to the root
+directory after, say, creating a jail just to disable network access, but also
+aesthetically intrusive to inspect the command for specific parameters.
 
 License
 -------
